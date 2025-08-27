@@ -9,20 +9,34 @@
   <link rel="stylesheet" href="https://use.typekit.net/ivx5slb.css">
 
   <style>
-    body {
+    html, body {
       margin: 0;
-      height: 100vh;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
       background-color: black;
       color: white;
       font-family: 'neu-haas-grotesk-display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 5em;
+      font-size: 10vw; /* responsive size */
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        font-size: 15vw; /* bigger on small screens */
+      }
     }
   </style>
 </head>
 <body>
-  XVXWa
+  XVXW
 </body>
 </html>
