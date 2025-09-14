@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>XVXW</title>
   <!-- Adobe Fonts link -->
   <link rel="stylesheet" href="https://use.typekit.net/ivx5slb.css">
@@ -21,19 +21,114 @@
       color: white;
       font-family: "neue-haas-grotesk-display", 'Helvetica Neue', Helvetica, Arial, sans-serif;
       font-size: 10vw; /* responsive size */
-      font-weight: 700; /* Use medium weight */
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       line-height: 1;
     }
     @media (max-width: 600px) {
-      body {
-        font-size: 15vw; /* bigger on small screens */
-      }
+      body { font-size: 15vw; }
+    }
+
+    /* Container for the word */
+    .word {
+      position: relative;
+      display: inline-block;
+      /* Keep base text crisp and readable */
+      color: white;
+      isolation: isolate;
+    }
+
+    /* Each letter floats slightly up/down with staggered delay */
+    .letter {
+      display: inline-block;
+      will-change: transform;
+      animation: floatY 3.8s ease-in-out infinite alternate;
+      animation-delay: calc(var(--i, 0) * -0.35s);
+      transform: translateY(0);
+    }
+
+    /* Add very slight variance in amplitude by index */
+    .letter:nth-child(1) { --amp: 0.8vh; }
+    .letter:nth-child(2) { --amp: 1.0vh; }
+    .letter:nth-child(3) { --amp: 0.9vh; }
+    .letter:nth-child(4) { --amp: 1.1vh; }
+
+    @keyframes floatY {
+      to { transform: translateY(calc(var(--amp, 1vh) * -1)); }
+    }
+
+    /* Holographic/refractive “edge” overlay */
+    .word::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      /* Slightly lower opacity to keep it subtle */
+      opacity: 0.75;
+      /* Stack above base text */
+      z-index: 1;
+
+      /* Create colored edge fringing with faint chromatic shadows */
+      text-shadow:
+        1px 0   0 rgba(0, 255, 255, 0.16),
+       -1px 0   0 rgba(255, 0, 255, 0.16),
+        0   1px 0 rgba(255, 255, 0, 0.10),
+        0  -1px 0 rgba(0, 255, 128, 0.10);
+
+      /* Refractive shimmer (SVG filter) + slight color play */
+      filter: url(#heat) hue-rotate(0deg) saturate(130%);
+      mix-blend-mode: screen; /* lets fringe interact with white base */
+      will-change: filter;
+      animation: sheen 10s ease-in-out infinite;
+    }
+
+    /* Slowly shift hue for a holographic look */
+    @keyframes sheen {
+      0%, 100% { filter: url(#heat) hue-rotate(0deg)   saturate(130%); }
+      50%      { filter: url(#heat) hue-rotate(35deg)  saturate(150%); }
+    }
+
+    /* Respect reduced motion preferences */
+    @media (prefers-reduced-motion: reduce) {
+      .letter { animation: none; }
+      .word::after { animation: none; }
     }
   </style>
 </head>
 <body>
-  XVXW
+  <div class="word" data-text="XVXW" aria-label="XVXW">
+    <span class="letter" style="--i:0">X</span>
+    <span class="letter" style="--i:1">V</span>
+    <span class="letter" style="--i:2">X</span>
+    <span class="letter" style="--i:3">W</span>
+  </div>
+
+  <!-- SVG filter defs: subtle heat shimmer (refractive) -->
+  <svg width="0" height="0" style="position:absolute; left:-9999px; pointer-events:none;" aria-hidden="true">
+    <defs>
+      <filter id="heat">
+        <!-- Gentle noise field -->
+        <feTurbulence type="fractalNoise"
+                      baseFrequency="0.006 0.004"
+                      numOctaves="1"
+                      seed="3"
+                      result="noize">
+          <!-- Animate frequency for a slow shimmer -->
+          <animate attributeName="baseFrequency"
+                   dur="8s"
+                   values="0.005 0.003; 0.007 0.005; 0.006 0.004; 0.005 0.003"
+                   repeatCount="indefinite" />
+        </feTurbulence>
+
+        <!-- Low-scale displacement to keep legibility -->
+        <feDisplacementMap in="SourceGraphic"
+                           in2="noize"
+                           scale="2.5"
+                           xChannelSelector="R"
+                           yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
 </body>
 </html>
