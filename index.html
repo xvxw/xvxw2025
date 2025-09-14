@@ -7,92 +7,58 @@
   <!-- Adobe Fonts link -->
   <link rel="stylesheet" href="https://use.typekit.net/ivx5slb.css">
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-    }
+    html, body { margin:0; padding:0; height:100%; width:100%; }
     body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: black;
-      color: white;
-      font-family: "neue-haas-grotesk-display", 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 10vw; /* responsive size */
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      line-height: 1;
+      display:flex; justify-content:center; align-items:center;
+      background:#000; color:#fff;
+      font-family:"neue-haas-grotesk-display",'Helvetica Neue',Helvetica,Arial,sans-serif;
+      font-size:10vw; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.05em; line-height:1;
     }
-    @media (max-width: 600px) {
-      body { font-size: 15vw; }
-    }
+    @media (max-width:600px){ body{ font-size:15vw; } }
 
-    /* Container for the word */
     .word {
-      position: relative;
-      display: inline-block;
-      /* Keep base text crisp and readable */
-      color: white;
-      isolation: isolate;
+      position:relative; display:inline-block; color:#fff; isolation:isolate;
     }
 
-    /* Each letter floats slightly up/down with staggered delay */
+    /* gentle, staggered vertical bob */
     .letter {
-      display: inline-block;
-      will-change: transform;
-      animation: floatY 3.8s ease-in-out infinite alternate;
-      animation-delay: calc(var(--i, 0) * -0.35s);
-      transform: translateY(0);
+      display:inline-block; transform:translateY(0);
+      animation:floatY 3.8s ease-in-out infinite alternate;
+      animation-delay:calc(var(--i,0)*-0.35s);
+      will-change:transform;
+    }
+    .letter:nth-child(1){ --amp:0.8vh; }
+    .letter:nth-child(2){ --amp:1.0vh; }
+    .letter:nth-child(3){ --amp:0.9vh; }
+    .letter:nth-child(4){ --amp:1.1vh; }
+    @keyframes floatY { to { transform:translateY(calc(var(--amp,1vh)*-1)); } }
+
+    /* Downward glow/bleed trail */
+    .word::before{
+      content:attr(data-text);
+      position:absolute; inset:0; pointer-events:none; z-index:0; opacity:0.9;
+      filter:url(#trail);
+      transform-origin:top; transform:translateY(1px) scaleY(1.35);
+      mix-blend-mode:screen;
+      /* fade the trail downwards */
+      -webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.95) 35%, rgba(0,0,0,0) 100%);
+              mask-image:linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.95) 35%, rgba(0,0,0,0) 100%);
     }
 
-    /* Add very slight variance in amplitude by index */
-    .letter:nth-child(1) { --amp: 0.8vh; }
-    .letter:nth-child(2) { --amp: 1.0vh; }
-    .letter:nth-child(3) { --amp: 0.9vh; }
-    .letter:nth-child(4) { --amp: 1.1vh; }
-
-    @keyframes floatY {
-      to { transform: translateY(calc(var(--amp, 1vh) * -1)); }
+    /* Chromatic fringe + subtle shimmer on top of crisp base */
+    .word::after{
+      content:attr(data-text);
+      position:absolute; inset:0; pointer-events:none; z-index:1; opacity:0.9;
+      filter:url(#aber);
+      mix-blend-mode:screen;
+      /* small extra pop to colors */
+      will-change:filter;
     }
 
-    /* Holographic/refractive “edge” overlay */
-    .word::after {
-      content: attr(data-text);
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      /* Slightly lower opacity to keep it subtle */
-      opacity: 0.75;
-      /* Stack above base text */
-      z-index: 1;
-
-      /* Create colored edge fringing with faint chromatic shadows */
-      text-shadow:
-        1px 0   0 rgba(0, 255, 255, 0.16),
-       -1px 0   0 rgba(255, 0, 255, 0.16),
-        0   1px 0 rgba(255, 255, 0, 0.10),
-        0  -1px 0 rgba(0, 255, 128, 0.10);
-
-      /* Refractive shimmer (SVG filter) + slight color play */
-      filter: url(#heat) hue-rotate(0deg) saturate(130%);
-      mix-blend-mode: screen; /* lets fringe interact with white base */
-      will-change: filter;
-      animation: sheen 10s ease-in-out infinite;
-    }
-
-    /* Slowly shift hue for a holographic look */
-    @keyframes sheen {
-      0%, 100% { filter: url(#heat) hue-rotate(0deg)   saturate(130%); }
-      50%      { filter: url(#heat) hue-rotate(35deg)  saturate(150%); }
-    }
-
-    /* Respect reduced motion preferences */
-    @media (prefers-reduced-motion: reduce) {
-      .letter { animation: none; }
-      .word::after { animation: none; }
+    @media (prefers-reduced-motion:reduce){
+      .letter{ animation:none; }
+      .word::after, .word::before{ animation:none; }
     }
   </style>
 </head>
@@ -104,29 +70,58 @@
     <span class="letter" style="--i:3">W</span>
   </div>
 
-  <!-- SVG filter defs: subtle heat shimmer (refractive) -->
+  <!-- SVG filters -->
   <svg width="0" height="0" style="position:absolute; left:-9999px; pointer-events:none;" aria-hidden="true">
     <defs>
-      <filter id="heat">
-        <!-- Gentle noise field -->
-        <feTurbulence type="fractalNoise"
-                      baseFrequency="0.006 0.004"
-                      numOctaves="1"
-                      seed="3"
-                      result="noize">
-          <!-- Animate frequency for a slow shimmer -->
-          <animate attributeName="baseFrequency"
-                   dur="8s"
+      <!-- 1) Aberration + shimmer -->
+      <filter id="aber">
+        <!-- Displacement shimmer -->
+        <feTurbulence type="fractalNoise" baseFrequency="0.006 0.004" numOctaves="1" seed="3" result="noise">
+          <animate attributeName="baseFrequency" dur="8s"
                    values="0.005 0.003; 0.007 0.005; 0.006 0.004; 0.005 0.003"
                    repeatCount="indefinite" />
         </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="noise"
+                           scale="1.75" xChannelSelector="R" yChannelSelector="G"
+                           result="disp"/>
+        <!-- Split channels -->
+        <feColorMatrix in="disp" type="matrix"
+          values="1 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 1 0" result="r"/>
+        <feColorMatrix in="disp" type="matrix"
+          values="0 0 0 0 0   0 1 0 0 0   0 0 0 0 0   0 0 0 1 0" result="g"/>
+        <feColorMatrix in="disp" type="matrix"
+          values="0 0 0 0 0   0 0 0 0 0   0 0 1 0 0   0 0 0 1 0" result="b"/>
+        <!-- Offset and soften each channel to form the rainbow edge -->
+        <feOffset in="r" dx="2.0" dy="0" result="rO"/>
+        <feOffset in="g" dx="-2.0" dy="0" result="gO"/>
+        <feOffset in="b" dx="0" dy="-0.5" result="bO"/>
+        <feGaussianBlur in="rO" stdDeviation="0.6" result="rB"/>
+        <feGaussianBlur in="gO" stdDeviation="0.6" result="gB"/>
+        <feGaussianBlur in="bO" stdDeviation="0.6" result="bB"/>
+        <!-- Merge back with displaced base -->
+        <feMerge>
+          <feMergeNode in="rB"/>
+          <feMergeNode in="gB"/>
+          <feMergeNode in="bB"/>
+          <feMergeNode in="disp"/>
+        </feMerge>
+      </filter>
 
-        <!-- Low-scale displacement to keep legibility -->
-        <feDisplacementMap in="SourceGraphic"
-                           in2="noize"
-                           scale="2.5"
-                           xChannelSelector="R"
-                           yChannelSelector="G" />
+      <!-- 2) Vertical trail -->
+      <filter id="trail">
+        <!-- Vertical blur for streak -->
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0.8 10" result="vBlur"/>
+        <!-- Dim it slightly so trails don’t overpower -->
+        <feColorMatrix in="vBlur" type="matrix"
+          values="1 0 0 0 0
+                  0 1 0 0 0
+                  0 0 1 0 0
+                  0 0 0 0.55 0" result="dim"/>
+        <!-- Small downward offset to kickstart the bleed -->
+        <feOffset in="dim" dx="0" dy="10" result="trailOut"/>
+        <feMerge>
+          <feMergeNode in="trailOut"/>
+        </feMerge>
       </filter>
     </defs>
   </svg>
